@@ -1,0 +1,27 @@
+{
+  "check": [
+    "check! did you see that coming?",
+    "there’s the ping—check.",
+    "king looks a bit drafty, no?"
+  ],
+  "capture": [
+    "thanks for the piece!",
+    "chomp.",
+    "don’t mind if I do."
+  ],
+  "blunder_self": [
+    "uhhh… that was totally a gambit.",
+    "ignore that. testing your tactics ;)",
+    "oops. your move."
+  ],
+  "blunder_opponent": [
+    "are you sure about that?",
+    "i’ll take that trade every day.",
+    "tactics tactics tactics!"
+  ],
+  "mate": [
+    "ggs!",
+    "good fight!",
+    "nice game."
+  ]
+}

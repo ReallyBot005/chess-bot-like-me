@@ -1,0 +1,7 @@
+{
+  "randomness": 0.2,
+  "blunder_chance": 0.025,
+  "captures_per_move": 0.232,
+  "checks_per_move": 0.076,
+  "notes": "Heuristic defaults. You can edit these numbers."
+}

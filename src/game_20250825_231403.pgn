@@ -1,0 +1,9 @@
+[Event "Training vs My Bot"]
+[Site "Local PC"]
+[Date "2025.08.25"]
+[Round "?"]
+[White "My Bot"]
+[Black "You"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 d6 4. d4 Bd7 5. Bxc6 bxc6 6. dxe5 Ne7 7. exd6 cxd6 8. Qxd6 Ng6 9. Qd4 1-0

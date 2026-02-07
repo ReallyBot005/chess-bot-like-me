@@ -1,0 +1,14 @@
+{
+  "engine_path": "C:/Users/SURAJ PAUL CHOUDHURY/Downloads/stockfish-windows-x86-64-avx2/stockfish/stockfish-windows-x86-64-avx2.exe",
+   "time_limit": 1,
+  "stockfish_path": "C:/Users/SURAJ PAUL CHOUDHURY/Downloads/stockfish-windows-x86-64-avx2/stockfish/stockfish-windows-x86-64-avx2.exe",
+  "uci_elo": 1800,
+  "limit_strength": true,
+  "think_time": 0.6,
+  "multipv": 3,
+  "opening_book_depth_plies": 16,
+  "style": {
+    "randomness": 0.25,
+    "blunder_chance": 0.01
+  }
+}
