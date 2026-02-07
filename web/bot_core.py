@@ -45,9 +45,27 @@ class BotGame:
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         self.eng = EngineWrapper(os.path.join(base_dir, "config.json"))
 
-        self.move_db = load_move_db()
+        # Load style and book
+        self.style = self.load_style()
+        self.book = self.load_book()
+        self.move_db = load_move_db() # Keep legacy DB for now as fallback/learning
+
         self.game = chess.pgn.Game()
         self.node = self.game
+
+    def load_style(self):
+        path = os.path.join(os.path.dirname(__file__), "..", "persona", "style.json")
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f)
+        return {"blunder_chance": 0.01} # Default
+
+    def load_book(self):
+        path = os.path.join(os.path.dirname(__file__), "..", "persona", "opening_book.json")
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f)
+        return {}
 
     # -------------------------------
     # start new game
@@ -100,18 +118,41 @@ class BotGame:
     def bot_move(self):
         move = None
         fen = self.board.fen()
+        
+        # 1. Try Persona Book (Weighted)
+        # book format: "fen": [{"san": "e4", "count": 10}, ...]
+        if fen in self.book:
+            moves_data = self.book[fen]
+            # Weighted random choice
+            population = [m["san"] for m in moves_data]
+            weights = [m["count"] for m in moves_data]
+            if population:
+                san = random.choices(population, weights=weights, k=1)[0]
+                try:
+                    move = self.board.parse_san(san)
+                except:
+                    pass
 
-        # try mimic DB
-        if fen in self.move_db and random.random() > BLUNDER_RATE:
-            san_moves = list(self.move_db[fen].keys())
-            try:
-                move = self.board.parse_san(random.choice(san_moves))
-            except:
-                pass
+        # 2. Fallback to Legacy DB (if enabled/needed)
+        if move is None and fen in self.move_db:
+             san_moves = list(self.move_db[fen].keys())
+             if san_moves:
+                 try:
+                     move = self.board.parse_san(random.choice(san_moves))
+                 except:
+                     pass
 
-        # else engine / blunder
+        # 3. Blunder check (using loaded style)
+        blunder_rate = self.style.get("blunder_chance", 0.01)
+        
+        # If we picked a move but RNG says blunder, discard it
+        if move is not None and random.random() < blunder_rate:
+             move = None # Force engine/random below to blunder? 
+             # Actually, let's explicit blunder logic below handle it
+
+        # 4. Engine or Random Blunder
         if move is None:
-            if random.random() < BLUNDER_RATE:
+            if random.random() < blunder_rate:
                 move = random.choice(list(self.board.legal_moves))
                 chat = say("blunder")
             else:
