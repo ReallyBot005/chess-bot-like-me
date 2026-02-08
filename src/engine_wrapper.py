@@ -16,26 +16,23 @@ class EngineWrapper:
 
     def _get_engine_path(self):
         """
-        Returns a valid Stockfish path depending on environment.
-        - Windows: uses config.json path
-        - Linux (Render): uses bundled binary
+        Windows (local): use engine_path from config.json
+        Linux (Render): use system-installed Stockfish
         """
 
         system = platform.system().lower()
 
         # 🚀 RENDER / LINUX
         if system == "linux":
-            base_dir = os.path.dirname(__file__)
-            stockfish_path = os.path.abspath(
-                os.path.join(base_dir, "..", "engine", "stockfish")
-            )
+            engine_path = "/usr/bin/stockfish"
 
-            if not os.path.exists(stockfish_path):
+            if not os.path.exists(engine_path):
                 raise FileNotFoundError(
-                    f"Linux Stockfish not found at {stockfish_path}"
+                    "Stockfish not found at /usr/bin/stockfish. "
+                    "Ensure it is installed via apt-get on Render."
                 )
 
-            return stockfish_path
+            return engine_path
 
         # 💻 LOCAL WINDOWS
         engine_path = self.config.get("engine_path")
