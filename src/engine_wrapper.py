@@ -2,6 +2,7 @@ import chess.engine
 import json
 import os
 import platform
+import shutil
 
 
 class EngineWrapper:
@@ -15,33 +16,21 @@ class EngineWrapper:
         self._configure_engine()
 
     def _get_engine_path(self):
-        """
-        Windows (local): use engine_path from config.json
-        Linux (Render): use system-installed Stockfish
-        """
-
         system = platform.system().lower()
 
         # 🚀 RENDER / LINUX
         if system == "linux":
-            engine_path = "/usr/bin/stockfish"
-
-            if not os.path.exists(engine_path):
-                raise FileNotFoundError(
-                    "Stockfish not found at /usr/bin/stockfish. "
-                    "Ensure it is installed via apt-get on Render."
-                )
-
-            return engine_path
+            engine = shutil.which("stockfish")
+            if engine is None:
+                raise FileNotFoundError("Stockfish not found on system PATH")
+            return engine
 
         # 💻 LOCAL WINDOWS
         engine_path = self.config.get("engine_path")
-
         if not engine_path or not os.path.exists(engine_path):
             raise FileNotFoundError(
                 f"Invalid engine_path in config.json: {engine_path}"
             )
-
         return engine_path
 
     def _configure_engine(self):
