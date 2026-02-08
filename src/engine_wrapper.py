@@ -8,53 +8,63 @@ import stat
 
 class EngineWrapper:
     def __init__(self, config_path):
-        # Load config
         with open(config_path, encoding="utf-8") as f:
             self.config = json.load(f)
 
-        # Resolve engine path safely
         engine_path = self._get_engine_path()
-
-        # Start Stockfish
         self.engine = chess.engine.SimpleEngine.popen_uci(engine_path)
-
-        # Configure engine strength
         self._configure_engine()
 
     def _get_engine_path(self):
         system = platform.system().lower()
 
-        # ============================
+        # ===============================
         # 🚀 RENDER / LINUX
-        # ============================
+        # ===============================
         if system == "linux":
-            engine_dir = "/opt/render/project/src/.stockfish"
-            engine_path = os.path.join(engine_dir, "stockfish")
+            base_dir = "/opt/render/project/src"
+            engine_dir = os.path.join(base_dir, ".stockfish")
+            binary_path = os.path.join(engine_dir, "stockfish")
 
-            if not os.path.exists(engine_path):
-                os.makedirs(engine_dir, exist_ok=True)
+            if os.path.exists(binary_path):
+                return binary_path
 
-                print("⬇️ Downloading Stockfish for Render (Linux binary)...")
+            os.makedirs(engine_dir, exist_ok=True)
 
-                subprocess.run(
-                    [
-                        "curl",
-                        "-L",
-                        "https://github.com/official-stockfish/Stockfish/releases/download/sf_16/stockfish-ubuntu-x86-64-avx2",
-                        "-o",
-                        engine_path,
-                    ],
-                    check=True,
-                )
+            print("⬇️ Downloading Stockfish (Linux x86_64)...")
 
-                # Make executable
-                os.chmod(engine_path, stat.S_IRWXU)
+            tar_path = os.path.join(engine_dir, "stockfish.tar.gz")
 
-            return engine_path
+            subprocess.run(
+                [
+                    "curl",
+                    "-L",
+                    "-o",
+                    tar_path,
+                    "https://github.com/official-stockfish/Stockfish/releases/download/sf_16/stockfish-ubuntu-x86-64-avx2.tar.gz",
+                ],
+                check=True,
+            )
 
-        # ============================
-        # 💻 LOCAL WINDOWS
-        # ============================
+            subprocess.run(
+                ["tar", "-xzf", tar_path, "-C", engine_dir],
+                check=True,
+            )
+
+            # Locate real binary
+            for root, _, files in os.walk(engine_dir):
+                for f in files:
+                    if f.startswith("stockfish") and "." not in f:
+                        real_binary = os.path.join(root, f)
+                        os.rename(real_binary, binary_path)
+                        os.chmod(binary_path, stat.S_IRWXU)
+                        return binary_path
+
+            raise RuntimeError("Stockfish binary not found after extraction")
+
+        # ===============================
+        # 💻 WINDOWS (LOCAL)
+        # ===============================
         engine_path = self.config.get("engine_path")
 
         if not engine_path or not os.path.exists(engine_path):
