@@ -1,234 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <title>Suraj aka ReallyBot (web)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Suraj aka ReallyBot (Web)</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>   <!-- ✅ jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <!-- Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" />
 
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 18px; background:#0b0f14; color:#e9eef5;}
-    .wrap { display: grid; grid-template-columns: 520px 1fr; gap: 20px; }
-    #board { width: 520px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.5);}
-    .panel { background:#121821; padding:16px; border-radius:12px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);}
-    .row { margin-bottom: 12px; }
-    button { background:#1f2937; color:#e9eef5; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;}
-    button:hover { background:#273445;}
-    .chat { height: 160px; overflow:auto; background:#0f141b; padding:10px; border-radius:8px; }
-    .moves { height: 240px; overflow:auto; background:#0f141b; padding:10px; border-radius:8px; }
-    .tag { display:inline-block; padding:2px 8px; border-radius: 999px; background:#233041; margin-left:6px; font-size:12px;}
-    .ok { color:#67e8f9 }
-    .err { color:#fda4af }
-    /* highlight style */
-.square-55d63 {
-  transition: background 0.2s;
-  position: relative;
-}
-.highlight-source::after,
-.highlight-target::after {
-  content:"";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 1;
-  background-color: rgba(255,215,0,0.4);
-  pointer-events: none;
-}
-.square-55d63 img,
-.square-55d63 piece {
-  position: relative;
-  z-index: 2;
-}
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-  </style>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
-  <h1>Suraj aka ReallyBot <span class="tag">web</span></h1>
-  <div class="wrap">
-    <div id="board"></div>
-    <div class="panel">
-      <div class="row">
-        <label>Play as:</label>
-        <button onclick="newGame('w')">White</button>
-        <button onclick="newGame('b')">Black</button>
-        <button onclick="resign()">Resign</button>
-      </div>
-      <div class="row chat" id="chat"></div>
-      <div class="row moves" id="movelist"></div>
-      <div class="row" id="status"></div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="start-screen">
+        <div class="start-content">
+            <h1>Suraj aka ReallyBot</h1>
+            <p>Ready to challenge the bot?</p>
+
+            <div id="start-actions">
+                <button class="primary big-btn" onclick="showColorSelection()">Start Match</button>
+            </div>
+
+            <div id="color-selection" style="display: none;">
+                <p>Choose your side:</p>
+                <div class="color-options">
+                    <button class="color-btn white" onclick="startGame('w')">White</button>
+                    <button class="color-btn black" onclick="startGame('b')">Black</button>
+                </div>
+                <button class="secondary small-btn" onclick="hideColorSelection()">Back</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const chatBox = document.getElementById('chat');
-    const moveList = document.getElementById('movelist');
-    const statusBox = document.getElementById('status');
-    let game = new Chess();
-    let board = null;
-    let userColor = 'w'; // default
+    <!-- Main Game Area (Hidden initially) -->
+    <div id="game-area" class="main-container" style="display: none;">
 
-    function appendChat(text, bot=true){
-      const p = document.createElement('div');
-      p.innerHTML = bot ? ("<b>ReallyBot:</b> " + text) : ("<b>You:</b> " + text);
-      chatBox.appendChild(p);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-    function pushMove(san){
-      const p = document.createElement('div');
-      p.textContent = san;
-      moveList.appendChild(p);
-      moveList.scrollTop = moveList.scrollHeight;
-    }
-    function setStatus(msg, ok=true){
-      statusBox.innerHTML = ok ? "<span class='ok'>" + msg + "</span>" : "<span class='err'>" + msg + "</span>";
-    }
+        <!-- Board Column -->
+        <div id="board-container">
+            <div id="board" style="width: 100%"></div>
+        </div>
 
-    function onDragStart (source, piece, position, orientation) {
-      if (game.game_over()) return false;
-      if ((userColor === 'w' && piece.search(/^b/) !== -1) ||
-          (userColor === 'b' && piece.search(/^w/) !== -1)) return false;
-      if ((userColor === 'w' && game.turn() !== 'w') ||
-          (userColor === 'b' && game.turn() !== 'b')) return false;
-    }
+        <!-- Sidebar Column -->
+        <div class="sidebar">
+            <header>
+                <h1>Suraj aka ReallyBot <span class="tag">WEB</span></h1>
+            </header>
 
-function removeHighlights() {
-  $('#board .square-55d63').removeClass('highlight-source highlight-target');
-}
+            <div class="status-box" id="status">Welcome! Select a side to start.</div>
 
-function highlightMove(source, target) {
-  $('#board .square-55d63').removeClass('highlight-source highlight-target');
-  $('#board .square-' + source).addClass('highlight-source');
-  $('#board .square-' + target).addClass('highlight-target');
-}
+            <div class="controls">
+                <button class="primary" onclick="newGame('w')">New Game (White)</button>
+                <button class="primary" onclick="newGame('b')">New Game (Black)</button>
+                <button class="secondary" onclick="resign()">Resign</button>
+            </div>
 
-  function onDrop(source, target) {
-  let move = game.move({
-    from: source,
-    to: target,
-    promotion: 'q' // always promote to queen for now
-  });
+            <div class="nav-controls">
+                <button class="nav-btn" onclick="navStart()" title="Start">&lt;&lt;</button>
+                <button class="nav-btn" onclick="navPrev()" title="Previous">&lt;</button>
+                <button class="nav-btn" onclick="navNext()" title="Next">&gt;</button>
+                <button class="nav-btn" onclick="navEnd()" title="Current">&gt;&gt;</button>
+            </div>
 
-  if (move === null) {
-    return 'snapback'; // ❌ illegal, snap back
-  }
+            <div class="game-info">
+                <strong>Move History</strong>
+                <div class="scroll-area" id="movelist"></div>
 
-  // ✅ highlight your move
-  highlightMove(source, target);
+                <strong>Chat</strong>
+                <div class="scroll-area" id="chat"></div>
+            </div>
 
-  // ✅ update local board + PGN
-  board.position(game.fen());
-  pushMove(move.san);
+            <button class="secondary small-btn" onclick="returnToMenu()">Main Menu</button>
+        </div>
 
-  // ✅ check for game over
-  if (game.game_over()) {
-    let msg = "Game Over: ";
-    if (game.in_checkmate()) {
-      msg += (game.turn() === 'w' ? "Black" : "White") + " wins by Checkmate!";
-    } else if (game.in_draw()) {
-      msg += "Draw!";
-    }
-    setStatus(msg, false);
-    return;
-  }
+    </div>
 
-  // ✅ tell server about the move
-  fetch("/move", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ uci: source + target })
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) {
-        alert("Error: " + data.error);
-        board.position(game.fen()); // reset if server rejected
-      } else {
-        game.load(data.fen);
-        board.position(data.fen);
+    <!-- Custom Logic -->
+    <script src="/static/script.js"></script>
 
-        if (data.bot_move) {
-          highlightMove(data.bot_move.from, data.bot_move.to);
-        }
-        if (data.bot_san) {
-          pushMove(data.bot_san);
-          appendChat("Bot played: " + data.bot_san + " 💬 " + (data.bot_chat || ""));
-        }
-
-        // ✅ check again after bot’s move
-        if (game.game_over()) {
-          let msg = "Game Over: ";
-          if (game.in_checkmate()) {
-            msg += (game.turn() === 'w' ? "Black" : "White") + " wins by Checkmate!";
-          } else if (game.in_draw()) {
-            msg += "Draw!";
-          }
-          setStatus(msg, false);
-        }
-      }
-    })
-    .catch(err => console.error(err));
-}
-
-    function onSnapEnd () { board.position(game.fen(), true); }
-
-    async function newGame(color){
-      userColor = color;
-      game.reset();
-      if(board){ board.orientation(color === 'w' ? 'white' : 'black'); board.start(); }
-      chatBox.innerHTML = ""; moveList.innerHTML = ""; setStatus("Starting…");
-
-      const res = await fetch('/new', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ color })
-      });
-      const data = await res.json();
-      if(!data.ok){ setStatus("Failed to start", false); return; }
-      game.load(data.fen);
-      board.position(game.fen());
-      if(data.chat) appendChat(data.chat, true);
-     if (data.botSAN) {
-  setTimeout(() => {
-    pushMove(data.botSAN);
-    if (data.botChat) appendChat(data.botChat, true);
-    game.load(data.fen);
-    board.position(game.fen(), true);
-  }, 700 + Math.random()*600);
-}
-
-      setStatus("Your move.");
-    }
-
-    async function resign(){
-      const res = await fetch('/resign', { method:'POST' });
-      const data = await res.json();
-      if(data.ok){
-        appendChat(data.chat || "You resigned.", true);
-        setStatus("Game Over: " + data.result);
-      }
-    }
-
-        // ✅ Init board AFTER libraries load
-    window.onload = function(){
-  board = Chessboard('board', {
-    draggable: true,
-    position: 'start',
-    pieceTheme: '/static/img/chesspieces/{piece}.png',
-    onDrop: onDrop,
-    moveSpeed: 300,      // ✅ faster slide for user move
-    snapbackSpeed: 250,  // ✅ faster snapback
-    snapSpeed: 250,      // ✅ instant snapping
-    onSnapEnd: function () {
-      // ✅ always sync with local game state
-      board.position(game.fen(), false);
-    }
-  });
-}
-
-  </script>
 </body>
+
 </html>

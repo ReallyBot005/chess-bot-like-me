@@ -1,0 +1,429 @@
+/* Modern Dark Theme (Chess.com inspired) */
+:root {
+  --bg-gradient: radial-gradient(circle at center, #302e2b 0%, #262421 100%);
+  --bg-color: #302e2b;
+  --sidebar-bg: #211f1c;
+  /* Slightly darker for contrast */
+  --text-color: #c3c3c3;
+  --text-highlight: #ffffff;
+
+  --accent-color: #81b64c;
+  --accent-hover: #95bb66;
+  --accent-shadow: #45752c;
+
+  --danger-color: #363431;
+  --danger-hover: #454340;
+
+  --board-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --panel-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  --panel-radius: 8px;
+  --font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-gradient);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+
+/* --- Start Screen --- */
+.start-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(38, 36, 33, 0.95);
+  /* Backdrop */
+  z-index: 100;
+  backdrop-filter: blur(5px);
+}
+
+.start-content {
+  text-align: center;
+  background: var(--sidebar-bg);
+  padding: 50px;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  max-width: 450px;
+  width: 90%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Subtle border */
+  animation: fadeIn 0.4s ease-out;
+}
+
+.start-content h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-highlight);
+  justify-content: center;
+}
+
+.start-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #999;
+}
+
+
+/* Buttons */
+button {
+  font-family: var(--font-family);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.big-btn {
+  font-size: 1.4rem;
+  padding: 16px 48px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.color-options {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.color-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 110px;
+  height: 110px;
+  border-radius: 16px;
+  border: none;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.color-btn.white {
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  color: #333;
+  box-shadow: 0 8px 0 #bbb;
+}
+
+.color-btn.black {
+  background: linear-gradient(135deg, #444 0%, #222 100%);
+  color: #f0f0f0;
+  box-shadow: 0 8px 0 #111;
+}
+
+.color-btn:active {
+  transform: translateY(6px);
+  box-shadow: none !important;
+}
+
+.color-btn:hover {
+  transform: translateY(-2px);
+}
+
+
+/* --- Main Layout --- */
+.main-container {
+  display: grid;
+  grid-template-columns: minmax(auto, 640px) 380px;
+  gap: 32px;
+  padding: 32px;
+  max-width: 1200px;
+  width: 100%;
+  opacity: 0;
+  /* Handled by fadeIn animation in JS mostly, or class */
+}
+
+/* --- Board Section --- */
+#board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#board {
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  box-shadow: var(--board-shadow);
+}
+
+/* --- Sidebar Section --- */
+.sidebar {
+  background-color: var(--sidebar-bg);
+  border-radius: var(--panel-radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: fit-content;
+  max-height: 85vh;
+  box-shadow: var(--panel-shadow);
+}
+
+h1 {
+  color: var(--text-highlight);
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag {
+  background-color: #3e3c39;
+  color: #aaa;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
+/* --- Controls --- */
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+button.primary {
+  background-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 4px 0 var(--accent-shadow);
+  margin-bottom: 4px;
+  flex: 1;
+}
+
+button.primary:active {
+  box-shadow: none;
+  transform: translateY(4px);
+  margin-bottom: 0;
+}
+
+button.primary:hover {
+  background-color: var(--accent-hover);
+}
+
+button.secondary {
+  background-color: var(--danger-color);
+  color: #ccc;
+  width: auto;
+  padding: 0 20px;
+}
+
+button.secondary:hover {
+  background-color: var(--danger-hover);
+  color: #fff;
+}
+
+
+/* Navigation Controls */
+.nav-controls {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  justify-content: center;
+}
+
+.nav-btn {
+  background: transparent;
+  color: #888;
+  padding: 8px 16px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-width: 44px;
+  border-radius: 4px;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.nav-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-btn:disabled {
+  opacity: 0.2;
+  cursor: default;
+  background: transparent !important;
+}
+
+
+/* --- Status & Move List --- */
+.game-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 250px;
+}
+
+.status-box {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-highlight);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: -4px;
+  letter-spacing: 0.5px;
+}
+
+.scroll-area {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 8px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Moves list styling */
+#movelist {
+  height: 140px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+}
+
+.move-item {
+  background: #3a3835;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #ccc;
+  font-family: monospace;
+}
+
+.move-item:last-child {
+  color: #fff;
+  background: #555;
+  /* Highlight last move */
+}
+
+
+/* Chat styling */
+#chat {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-msg {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chat-msg b {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.chat-msg.bot {
+  border-left: 3px solid var(--accent-color);
+}
+
+.chat-msg.bot b {
+  color: var(--accent-color);
+}
+
+.chat-msg.user {
+  border-left: 3px solid #5dade2;
+}
+
+.chat-msg.user b {
+  color: #5dade2;
+}
+
+
+/* Highlight Moves */
+.highlight-source,
+.highlight-target {
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 0, 0.5);
+  /* Clearer box highlight */
+}
+
+/* Legal Move Hints */
+.highlight-hint {
+  background: radial-gradient(rgba(0, 0, 0, 0.2) 19%, transparent 20%);
+}
+
+.highlight-capture {
+  background: radial-gradient(transparent 0%, transparent 79%, rgba(0, 0, 0, 0.2) 80%);
+}
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
